@@ -7,6 +7,7 @@ import Link from "next/link";
 import api from "@/lib/api";
 import { useAuthStore } from "@/store/authStore";
 import { TokenOut, LoginPayload } from "@/types/auth";
+import GoogleLoginButton from "@/components/auth/GoogleLoginButton";
 
 export default function LoginPage() {
     const router = useRouter();
@@ -65,6 +66,14 @@ export default function LoginPage() {
                     {loading ? "Signing in..." : "Sign in"}
                 </button>
             </form>
+
+            <div className="flex items-center gap-3">
+                <div className="h-px flex-1 bg-white/10" />
+                <span className="text-xs text-white/30 uppercase tracking-wider">or</span>
+                <div className="h-px flex-1 bg-white/10" />
+            </div>
+
+            <GoogleLoginButton onError={setError} />
 
             <p className="text-center text-sm text-white/40">
                 No account?{" "}

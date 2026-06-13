@@ -6,37 +6,33 @@ import { useRouter } from "next/navigation";
 import {
     LayoutDashboard, Compass, BookMarked, Flag,
     Calendar, Users, FolderOpen, BarChart2,
-    Bell, Search, ChevronLeft, ChevronRight, LogOut
+    Bell, Search, ChevronLeft, ChevronRight, Settings
 } from "lucide-react";
 import { clsx } from "clsx";
 import NavItem from "./NavItem";
 import { useAuthStore } from "@/store/authStore";
 
 const NAV = [
-    { href: "/dashboard", label: "Dashboard", icon: LayoutDashboard },
-    { href: "/discover", label: "Discover", icon: Compass },
-    { href: "/my-hackathons", label: "My Hackathons", icon: BookMarked },
-    { href: "/milestones", label: "Milestones", icon: Flag },
-    { href: "/calendar", label: "Calendar", icon: Calendar },
-    { href: "/teams", label: "Teams", icon: Users },
-    { href: "/resources", label: "Resources", icon: FolderOpen },
-    { href: "/statistics", label: "Statistics", icon: BarChart2 },
+    { href: "/dashboard",     label: "Dashboard",    icon: LayoutDashboard },
+    { href: "/discover",      label: "Discover",     icon: Compass },
+    { href: "/my-hackathons", label: "My Hackathons",icon: BookMarked },
+    { href: "/milestones",    label: "Milestones",   icon: Flag },
+    { href: "/calendar",      label: "Calendar",     icon: Calendar },
+    { href: "/teams",         label: "Teams",        icon: Users },
+    { href: "/resources",     label: "Resources",    icon: FolderOpen },
+    { href: "/statistics",    label: "Statistics",   icon: BarChart2 },
 ];
 
 const BOTTOM_NAV = [
-    { href: "/search", label: "Search", icon: Search },
-    { href: "/notifications", label: "Notifications", icon: Bell },
+    { href: "/search",        label: "Search",       icon: Search },
+    { href: "/notifications", label: "Notifications",icon: Bell },
+    { href: "/settings",      label: "Settings",     icon: Settings },
 ];
 
 export default function Sidebar() {
     const [collapsed, setCollapsed] = useState(false);
-    const { user, clearAuth } = useAuthStore();
+    const { user } = useAuthStore();
     const router = useRouter();
-
-    const handleLogout = () => {
-        clearAuth();
-        router.push("/login");
-    };
 
     return (
         <aside
@@ -68,21 +64,19 @@ export default function Sidebar() {
                 ))}
             </div>
 
-            {/* User + logout */}
-            <div className={clsx(
-                "p-3 border-t border-white/10 flex items-center gap-2",
-                collapsed && "justify-center"
-            )}>
+            {/* User */}
+            <div
+                onClick={() => router.push("/settings")}
+                className={clsx(
+                    "p-3 border-t border-white/10 flex items-center gap-2 cursor-pointer hover:bg-white/5 transition",
+                    collapsed && "justify-center"
+                )}
+            >
                 <div className="w-7 h-7 rounded-full bg-white/10 flex items-center justify-center shrink-0 text-xs text-white font-medium uppercase">
                     {user?.username?.[0] ?? "?"}
                 </div>
                 {!collapsed && (
-                    <>
-                        <span className="text-xs text-white/60 truncate flex-1">{user?.username}</span>
-                        <button onClick={handleLogout} className="text-white/30 hover:text-white transition">
-                            <LogOut size={14} />
-                        </button>
-                    </>
+                    <span className="text-xs text-white/60 truncate flex-1">{user?.username}</span>
                 )}
             </div>
 

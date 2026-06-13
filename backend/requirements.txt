@@ -16,3 +16,4 @@ beautifulsoup4==4.12.3
 apscheduler==3.10.4
 lxml==5.2.2
 python-telegram-bot==21.6
+google-auth==2.35.0

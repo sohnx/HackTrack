@@ -12,6 +12,9 @@ class UserLogin(BaseModel):
     email: EmailStr
     password: str
 
+class GoogleAuthPayload(BaseModel):
+    credential: str  # Google ID token (JWT) from Google Identity Services
+
 class UserOut(BaseModel):
     model_config = ConfigDict(from_attributes=True)
 
@@ -19,7 +22,8 @@ class UserOut(BaseModel):
     email: EmailStr
     username: str
     avatar_url: str | None = None
-
+    telegram_chat_id: str | None = None
+    
 class TokenOut(BaseModel):
     access_token: str
     token_type: str = "bearer"

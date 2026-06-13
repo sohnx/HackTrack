@@ -10,6 +10,7 @@ class Settings(BaseSettings):
     FRONTEND_URL: str = "http://localhost:3000"
     TELEGRAM_BOT_TOKEN: str = ""
     TELEGRAM_BOT_USERNAME: str = "hacktrack_bot"
+    GOOGLE_CLIENT_ID: str = ""
 
     model_config = {"env_file": ".env"}
 
