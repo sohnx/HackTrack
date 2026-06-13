@@ -1,10 +1,11 @@
 // frontend/app/(dashboard)/notifications/page.tsx
 "use client";
 
-import { Bell, BellOff, CheckCheck, Clock, Flag, Users, Info, Trash2 } from "lucide-react";
+import { useState } from "react";
+import { Bell, BellOff, CheckCheck, Clock, Flag, Users, Info, Trash2, RefreshCw } from "lucide-react";
 import PageHeader from "@/components/shared/PageHeader";
 import EmptyState from "@/components/shared/EmptyState";
-import { useNotifications, useMarkNotificationRead, useMarkAllRead, useDeleteNotification } from "@/hooks/useNotifications";
+import { useNotifications, useMarkNotificationRead, useMarkAllRead, useDeleteNotification, useCheckDeadlines } from "@/hooks/useNotifications";
 import { Notification, NotificationType } from "@/types/notification";
 import { cn } from "@/utils/cn";
 
@@ -68,8 +69,17 @@ export default function NotificationsPage() {
     const { mutate: toggleRead } = useMarkNotificationRead();
     const { mutate: markAllRead } = useMarkAllRead();
     const { mutate: deleteNotification } = useDeleteNotification();
+    const { mutate: checkDeadlines, isPending: checking } = useCheckDeadlines();
+    const [checked, setChecked] = useState(false);
 
     const unreadCount = notifications.filter((n) => !n.is_read).length;
+
+    const handleCheck = () => {
+        checkDeadlines(undefined, {
+            onSuccess: () => setChecked(true),
+        });
+        setTimeout(() => setChecked(false), 3000);
+    };
 
     return (
         <div className="p-8 max-w-3xl mx-auto">
@@ -77,14 +87,29 @@ export default function NotificationsPage() {
                 title="Notifications"
                 subtitle={unreadCount > 0 ? `${unreadCount} unread` : "You're all caught up"}
                 action={
-                    unreadCount > 0 ? (
+                    <div className="flex items-center gap-2">
                         <button
-                            onClick={() => markAllRead()}
-                            className="flex items-center gap-1.5 border border-white/10 text-white/60 hover:text-white text-sm px-4 py-2 rounded-lg transition"
+                            onClick={handleCheck}
+                            disabled={checking}
+                            className={cn(
+                                "flex items-center gap-1.5 border text-sm px-4 py-2 rounded-lg transition",
+                                checked
+                                    ? "border-green-500/30 text-green-400 bg-green-500/10"
+                                    : "border-white/10 text-white/60 hover:text-white"
+                            )}
                         >
-                            <CheckCheck size={14} /> Mark all read
+                            <RefreshCw size={14} className={cn(checking && "animate-spin")} />
+                            {checked ? "Checked!" : "Check deadlines"}
                         </button>
-                    ) : undefined
+                        {unreadCount > 0 && (
+                            <button
+                                onClick={() => markAllRead()}
+                                className="flex items-center gap-1.5 border border-white/10 text-white/60 hover:text-white text-sm px-4 py-2 rounded-lg transition"
+                            >
+                                <CheckCheck size={14} /> Mark all read
+                            </button>
+                        )}
+                    </div>
                 }
             />
 
@@ -93,7 +118,7 @@ export default function NotificationsPage() {
                     <div className="w-6 h-6 border border-white/20 border-t-white/60 rounded-full animate-spin" />
                 </div>
             ) : notifications.length === 0 ? (
-                <EmptyState icon={BellOff} title="No notifications" description="You'll see deadline alerts and updates here" />
+                <EmptyState icon={BellOff} title="No notifications" description="Click 'Check deadlines' to scan for upcoming deadlines" />
             ) : (
                 <div className="bg-[#111111] border border-white/10 rounded-xl divide-y divide-white/5 overflow-hidden">
                     {notifications.map((n) => (

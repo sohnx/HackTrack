@@ -1,17 +1,20 @@
 // frontend/app/(dashboard)/hackathons/[id]/page.tsx
 "use client";
 
-import { useState } from "react";
+import { useState, useRef, useEffect } from "react";
 import { useParams, useRouter } from "next/navigation";
 import {
     ArrowLeft, Calendar, MapPin, Trophy, Users, ExternalLink,
-    Bookmark, BookmarkCheck, Trash2, Flag, FolderOpen, ChevronRight
+    Bookmark, BookmarkCheck, Trash2, Flag, FolderOpen, ChevronRight, ChevronDown
 } from "lucide-react";
-import { useHackathon, useSaveHackathon, useDeleteHackathon } from "@/hooks/useHackathons";
+import { useHackathon, useSaveHackathon, useDeleteHackathon, useUpdateHackathon } from "@/hooks/useHackathons";
 import { useMilestones } from "@/hooks/useMilestones";
 import Badge from "@/components/shared/Badge";
 import { formatDate, deadlineLabel, isUrgent } from "@/utils/date";
 import { cn } from "@/utils/cn";
+
+const STATUSES = ["upcoming", "ongoing", "completed"] as const;
+type Status = typeof STATUSES[number];
 
 const statusVariant: Record<string, "default" | "green" | "yellow" | "blue"> = {
     upcoming: "blue",
@@ -20,15 +23,35 @@ const statusVariant: Record<string, "default" | "green" | "yellow" | "blue"> = {
     saved: "yellow",
 };
 
+const statusColors: Record<Status, string> = {
+    upcoming: "text-blue-400 border-blue-500/30 bg-blue-500/10",
+    ongoing:  "text-green-400 border-green-500/30 bg-green-500/10",
+    completed: "text-white/40 border-white/10 bg-white/5",
+};
+
 export default function HackathonDetailsPage() {
     const { id } = useParams<{ id: string }>();
     const router = useRouter();
     const [confirmDelete, setConfirmDelete] = useState(false);
+    const [statusOpen, setStatusOpen] = useState(false);
+    const statusRef = useRef<HTMLDivElement>(null);
 
     const { data: h, isLoading } = useHackathon(id);
     const { mutate: save } = useSaveHackathon();
     const { mutate: remove } = useDeleteHackathon();
+    const { mutate: update } = useUpdateHackathon(id);
     const { data: milestones = [] } = useMilestones(id);
+
+    // Close dropdown on outside click
+    useEffect(() => {
+        function handler(e: MouseEvent) {
+            if (statusRef.current && !statusRef.current.contains(e.target as Node)) {
+                setStatusOpen(false);
+            }
+        }
+        document.addEventListener("mousedown", handler);
+        return () => document.removeEventListener("mousedown", handler);
+    }, []);
 
     if (isLoading) {
         return (
@@ -47,6 +70,13 @@ export default function HackathonDetailsPage() {
         if (!confirmDelete) { setConfirmDelete(true); return; }
         remove(h.id, { onSuccess: () => router.push("/my-hackathons") });
     };
+
+    const handleStatusChange = (status: Status) => {
+        update({ status });
+        setStatusOpen(false);
+    };
+
+    const currentStatus = (STATUSES.includes(h.status as Status) ? h.status : "upcoming") as Status;
 
     return (
         <div className="p-8 max-w-4xl mx-auto">
@@ -106,7 +136,44 @@ export default function HackathonDetailsPage() {
                 )}
 
                 <div className="flex flex-wrap items-center gap-3 mb-4">
-                    <Badge label={h.status} variant={statusVariant[h.status]} />
+                    {/* Status dropdown */}
+                    <div className="relative" ref={statusRef}>
+                        <button
+                            onClick={() => setStatusOpen((o) => !o)}
+                            className={cn(
+                                "flex items-center gap-1.5 h-6 px-2.5 rounded-full border text-xs font-medium transition",
+                                statusColors[currentStatus]
+                            )}
+                        >
+                            {currentStatus}
+                            <ChevronDown size={11} className={cn("transition", statusOpen && "rotate-180")} />
+                        </button>
+
+                        {statusOpen && (
+                            <div className="absolute top-8 left-0 z-50 bg-[#1a1a1a] border border-white/10 rounded-lg overflow-hidden shadow-xl min-w-[130px]">
+                                {STATUSES.map((s) => (
+                                    <button
+                                        key={s}
+                                        onClick={() => handleStatusChange(s)}
+                                        className={cn(
+                                            "w-full flex items-center gap-2 px-3 py-2 text-xs text-left transition hover:bg-white/5",
+                                            s === currentStatus ? "text-white" : "text-white/50"
+                                        )}
+                                    >
+                                        <span className={cn(
+                                            "w-1.5 h-1.5 rounded-full",
+                                            s === "upcoming"  && "bg-blue-400",
+                                            s === "ongoing"   && "bg-green-400",
+                                            s === "completed" && "bg-white/30",
+                                        )} />
+                                        {s}
+                                        {s === currentStatus && <span className="ml-auto text-white/30">✓</span>}
+                                    </button>
+                                ))}
+                            </div>
+                        )}
+                    </div>
+
                     {h.tags?.map((t) => (
                         <span key={t} className="text-xs text-white/30 bg-white/5 px-2 py-0.5 rounded-full">{t}</span>
                     ))}

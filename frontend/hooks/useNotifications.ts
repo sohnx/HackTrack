@@ -37,3 +37,11 @@ export function useDeleteNotification() {
         onSuccess: () => qc.invalidateQueries({ queryKey: [KEY] }),
     });
 }
+
+export function useCheckDeadlines() {
+    const qc = useQueryClient();
+    return useMutation({
+        mutationFn: () => api.post("/notifications/test-deadline-reminders"),
+        onSuccess: () => qc.invalidateQueries({ queryKey: [KEY] }),
+    });
+}

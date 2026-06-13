@@ -8,9 +8,11 @@ import { User } from "@/types/auth";
 interface AuthState {
     user: User | null;
     token: string | null;
+    hasHydrated: boolean;
     setAuth: (user: User, token: string) => void;
     clearAuth: () => void;
     isAuthenticated: () => boolean;
+    setHasHydrated: (state: boolean) => void;
 }
 
 function setCookie(name: string, value: string, days = 7) {
@@ -27,6 +29,7 @@ export const useAuthStore = create<AuthState>()(
         (set, get) => ({
             user: null,
             token: null,
+            hasHydrated: false,
             setAuth: (user, token) => {
                 localStorage.setItem("ht_token", token);
                 setCookie("ht_token", token);
@@ -38,7 +41,14 @@ export const useAuthStore = create<AuthState>()(
                 set({ user: null, token: null });
             },
             isAuthenticated: () => !!get().token,
+            setHasHydrated: (state) => set({ hasHydrated: state }),
         }),
-        { name: "ht_auth", partialize: (s) => ({ user: s.user, token: s.token }) }
+        {
+            name: "ht_auth",
+            partialize: (s) => ({ user: s.user, token: s.token }),
+            onRehydrateStorage: () => (state) => {
+                state?.setHasHydrated(true);
+            },
+        }
     )
 );
