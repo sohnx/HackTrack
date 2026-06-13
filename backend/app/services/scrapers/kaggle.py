@@ -21,14 +21,18 @@ class KaggleScraper(BaseScraper):
         # Use basic auth if credentials are provided
         username = os.getenv("KAGGLE_USERNAME")
         api_key = os.getenv("KAGGLE_KEY")
-        auth = (username, api_key) if username and api_key else None
+        if not (username and api_key):
+            # Public endpoint requires auth; without credentials, skip gracefully
+            # rather than hitting a 400/401.
+            return results
+        auth = (username, api_key)
 
         async with httpx.AsyncClient(timeout=20, headers=headers, auth=auth) as client:
             page = 1
             while True:
                 res = await client.get(PUBLIC_API, params={**PARAMS, "page": page})
-                if res.status_code == 401:
-                    # No auth available — skip gracefully
+                if res.status_code in (400, 401, 403):
+                    # Auth rejected — skip gracefully
                     break
                 res.raise_for_status()
                 items = res.json()

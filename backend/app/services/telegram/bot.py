@@ -84,7 +84,6 @@ async def cmd_start(update: Update, ctx: ContextTypes.DEFAULT_TYPE):
                 "Use /hackathons to see your active hackathons\\.\n"
                 "Use /deadlines for upcoming deadlines\\.\n"
                 "Use /help for all commands\\.",
-                parse_mode="MarkdownV2",
             )
         finally:
             db.close()

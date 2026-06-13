@@ -32,10 +32,12 @@ class UnstopScraper(BaseScraper):
                     break
                 for item in items:
                     loc = item.get("city") or item.get("country") or None
+                    public_url = item.get("public_url") or ""
+                    url = f"https://unstop.com/{public_url}" if public_url else f"https://unstop.com/hackathons/{item.get('id', '')}"
                     results.append(RawHackathon(
                         title=clean_text(item.get("title")) or "",
                         source=self.source,
-                        url=f"https://unstop.com/hackathons/{item.get('public_url', item.get('id', ''))}",
+                        url=url,
                         description=clean_text(item.get("description") or item.get("tagline")),
                         banner_url=item.get("logo_url") or item.get("banner"),
                         location=loc,

@@ -6,13 +6,13 @@ from bs4 import BeautifulSoup
 from app.services.scrapers.base import BaseScraper, RawHackathon
 from app.services.scrapers.normalize import clean_text, parse_date, detect_online
 
-EVENTS_URL = "https://mlh.io/seasons/2025/events"
+EVENTS_URL = "https://mlh.com/seasons/2025/events"
 
 class MLHScraper(BaseScraper):
     source = "mlh"
 
     async def fetch(self) -> list[RawHackathon]:
-        async with httpx.AsyncClient(timeout=20, headers={"User-Agent": "Mozilla/5.0"}) as client:
+        async with httpx.AsyncClient(timeout=20, headers={"User-Agent": "Mozilla/5.0"}, follow_redirects=True) as client:
             res = await client.get(EVENTS_URL)
             res.raise_for_status()
         return self._parse(res.text)
@@ -31,7 +31,7 @@ class MLHScraper(BaseScraper):
             link_el = card.select_one("a[href]")
             url = link_el["href"] if link_el else None
             if url and not url.startswith("http"):
-                url = f"https://mlh.io{url}"
+                url = f"https://mlh.com{url}"
 
             date_el = card.select_one(".event-date, [class*=date], time")
             date_text = clean_text(date_el.get_text()) if date_el else None

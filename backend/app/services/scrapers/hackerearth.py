@@ -20,11 +20,19 @@ class HackerEarthScraper(BaseScraper):
             res.raise_for_status()
             data = res.json()
 
-        # API returns {"response": {"hackathons": [...], "challenges": [...]}}
-        response = data.get("response", data)
-        events = response.get("hackathons", []) + response.get("challenges", [])
+        # API can return a top-level list, or {"response": {...}} / {"response": [...]}
+        if isinstance(data, list):
+            events = data
+        else:
+            response = data.get("response", data)
+            if isinstance(response, list):
+                events = response
+            else:
+                events = response.get("hackathons", []) + response.get("challenges", [])
 
         for e in events:
+            if not isinstance(e, dict):
+                continue
             results.append(RawHackathon(
                 title=clean_text(e.get("title")) or "",
                 source=self.source,

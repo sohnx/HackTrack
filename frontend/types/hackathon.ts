@@ -26,6 +26,24 @@ export interface Hackathon {
     tags?: string[];
 }
 
+// Scraped from external sources — no owner, no status
+export interface DiscoveredHackathon {
+    id: string;
+    title: string;
+    description: string | null;
+    url: string | null;
+    banner_url: string | null;
+    source: HackathonSource;
+    location: string | null;
+    is_online: boolean;
+    prize_pool: string | null;
+    team_size: string | null;
+    start_date: string | null;
+    end_date: string | null;
+    deadline: string | null;
+    tags: string[];
+}
+
 export interface HackathonCreate {
     title: string;
     description?: string;
