@@ -17,3 +17,17 @@ alembic/versions/*.pyc
 # IDE
 .vscode/
 .idea/
+
+# Node / frontend
+node_modules/
+frontend/dist/
+frontend/build/
+
+# Logs (can leak secrets, stack traces, paths)
+*.log
+backend/logs/
+frontend/logs/
+
+# OS junk
+.DS_Store
+Thumbs.db
