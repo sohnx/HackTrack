@@ -24,3 +24,7 @@ export interface RegisterPayload {
     username: string;
     password: string;
 }
+
+export interface GoogleAuthPayload {
+    credential: string;
+}

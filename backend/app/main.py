@@ -1,5 +1,6 @@
 # backend/app/main.py
 
+import asyncio
 import logging
 from contextlib import asynccontextmanager
 from fastapi import FastAPI
@@ -17,10 +18,14 @@ async def lifespan(app: FastAPI):
 
     tg_app = build_telegram_app()
     if tg_app:
-        await tg_app.initialize()
-        await tg_app.start()
-        await tg_app.updater.start_polling(drop_pending_updates=True)
-        logger.info("Telegram bot started")
+        try:
+            await asyncio.wait_for(tg_app.initialize(), timeout=10)
+            await tg_app.start()
+            await tg_app.updater.start_polling(drop_pending_updates=True)
+            logger.info("Telegram bot started")
+        except Exception as e:
+            logger.warning(f"Telegram bot unavailable, continuing without it: {e}")
+            tg_app = None
 
     yield
 
